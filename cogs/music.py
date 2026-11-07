@@ -200,38 +200,76 @@ class Music(commands.Cog):
         await interaction.response.send_message("⏹️ Đã dừng phát nhạc, xóa hàng đợi và rời kênh thoại.")
 
     @app_commands.command(name="queue", description="Hiển thị danh sách hàng đợi các bài hát.")
-    async def queue(self, interaction: discord.Interaction) -> None:
-        """Xem danh sách hàng đợi."""
+    @app_commands.describe(page="Số trang danh sách bài hát (mặc định là trang 1)")
+    async def queue(self, interaction: discord.Interaction, page: int = 1) -> None:
+        """Xem danh sách hàng đợi với cơ chế phân trang an toàn."""
         player: wavelink.Player = cast(wavelink.Player, interaction.guild.voice_client)
         if not player or (not player.current and player.queue.is_empty):
             await interaction.response.send_message("📭 Hàng đợi hiện đang trống.", ephemeral=True)
             return
 
-        embed = discord.Embed(title=" Danh Sách Hàng Đợi", color=discord.Color.gold())
+        embed = discord.Embed(title="📋 Danh Sách Hàng Đợi", color=discord.Color.gold())
 
+        # 1. Hiển thị bài hát đang phát
         if player.current:
+            curr_title = player.current.title
+            if len(curr_title) > 70:
+                curr_title = curr_title[:67] + "..."
             pos = format_duration(player.position)
             length = format_duration(player.current.length)
             embed.add_field(
                 name="▶️ Đang phát:",
-                value=f"**[{player.current.title}]({player.current.uri})** ({pos}/{length})",
+                value=f"**[{curr_title}]({player.current.uri})** ({pos}/{length})",
                 inline=False,
             )
 
+        # 2. Hiển thị danh sách các bài tiếp theo
         if not player.queue.is_empty:
-            queue_list = []
-            for i, track in enumerate(list(player.queue)[:10], start=1):
-                queue_list.append(f"`{i}.` **[{track.title}]({track.uri})** [{format_duration(track.length)}]")
+            queue_list_all = list(player.queue)
+            total_tracks = len(queue_list_all)
+            per_page = 10
+            total_pages = max(1, (total_tracks + per_page - 1) // per_page)
+
+            if page < 1 or page > total_pages:
+                await interaction.response.send_message(
+                    f"❌ Trang `{page}` không hợp lệ! Hàng đợi hiện có `{total_pages}` trang (từ 1 đến {total_pages}).",
+                    ephemeral=True,
+                )
+                return
+
+            start_idx = (page - 1) * per_page
+            end_idx = min(start_idx + per_page, total_tracks)
+            page_tracks = queue_list_all[start_idx:end_idx]
+
+            queue_lines = []
+            char_count = 0
+
+            for i, track in enumerate(page_tracks, start=start_idx + 1):
+                track_title = track.title
+                # Cắt ngắn tiêu đề nếu quá dài để hiển thị gọn gàng, tránh tràn giao diện
+                if len(track_title) > 55:
+                    track_title = track_title[:52] + "..."
+                duration = format_duration(track.length)
+                line = f"`{i}.` **[{track_title}]({track.uri})** `[{duration}]`"
+
+                # Bảo vệ giới hạn 1024 ký tự của Discord Embed Field (chặn ở 950 để có biên an toàn)
+                if char_count + len(line) + 1 > 950:
+                    queue_lines.append("`... và các bài khác trên trang này`")
+                    break
+
+                queue_lines.append(line)
+                char_count += len(line) + 1
 
             embed.add_field(
-                name=f" Tiếp theo (Tổng số: {len(player.queue)} bài):",
-                value="\n".join(queue_list),
+                name=f"⏭️ Tiếp theo ({start_idx + 1} - {end_idx} / {total_tracks} bài):",
+                value="\n".join(queue_lines),
                 inline=False,
             )
-            if len(player.queue) > 10:
-                embed.set_footer(text=f"Và còn {len(player.queue) - 10} bài hát khác phía sau...")
+            embed.set_footer(
+                text=f"Trang {page}/{total_pages} • Tổng: {total_tracks} bài • Dùng /queue [số trang] để lật trang"
+            )
         else:
-            embed.add_field(name=" Tiếp theo:", value="Không còn bài hát nào trong hàng đợi.", inline=False)
+            embed.add_field(name="⏭️ Tiếp theo:", value="Không còn bài hát nào trong hàng đợi.", inline=False)
 
         await interaction.response.send_message(embed=embed)
 
