@@ -1,0 +1,41 @@
+services:
+  lavalink:
+    image: ghcr.io/lavalink-devs/lavalink:4
+    container_name: lavalink-server
+    restart: unless-stopped
+    ports:
+      - "2333:2333"
+    environment:
+      - JAVA_TOOL_OPTIONS=-Duser.language=en -Duser.country=US
+    volumes:
+      - ./application.yml:/opt/Lavalink/application.yml
+      - ./plugins:/opt/Lavalink/plugins
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+    networks:
+      - music-network
+
+  bot:
+    build: .
+    container_name: discord-music-bot
+    restart: unless-stopped
+    depends_on:
+      - lavalink
+    volumes:
+      - .:/app
+    env_file:
+      - .env
+    environment:
+      - LAVALINK_URI=http://lavalink:2333
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+    networks:
+      - music-network
+
+networks:
+  music-network:
+    driver: bridge
