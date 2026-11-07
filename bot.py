@@ -83,7 +83,7 @@ class MusicBot(commands.Bot):
             except Exception as e:
                 logger.error(f"Lỗi sync guild {guild.name}: {e}")
 
-        activity = discord.Activity(type=discord.ActivityType.listening, name="/play | Nhạc Chill")
+        activity = discord.Activity(type=discord.ActivityType.listening, name="/play <tên_bài_hát>")
         await self.change_presence(status=discord.Status.online, activity=activity)
 
 
