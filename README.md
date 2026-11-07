@@ -28,9 +28,10 @@ Hỗ trợ 2 phương thức khởi chạy linh hoạt: **Docker Compose** (đó
 | `/resume` | Tiếp tục phát bài hát |
 | `/skip` | Bỏ qua bài hát hiện tại |
 | `/stop` | Dừng phát nhạc, xóa sạch hàng đợi và rời khỏi kênh thoại |
-| `/queue` | Xem danh sách các bài hát đang chờ trong hàng đợi |
+| `/queue [page]` | Xem danh sách hàng đợi (hỗ trợ phân trang) |
 | `/nowplaying` | Xem chi tiết bài hát đang phát cùng thanh tiến trình trực quan |
 | `/volume <1-100>`| Tùy chỉnh mức âm lượng phát nhạc |
+| `/ping` | Kiểm tra độ trễ mạng (Gateway, REST API, Voice Latency) để đánh giá độ mượt |
 | `/join` | Mời bot vào kênh thoại của bạn |
 | `/leave` | Cho bot rời khỏi kênh thoại |
 

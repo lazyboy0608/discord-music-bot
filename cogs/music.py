@@ -1,5 +1,6 @@
 import asyncio
 import datetime
+import time
 from typing import cast
 import discord
 from discord import app_commands
@@ -352,6 +353,46 @@ class Music(commands.Cog):
         else:
             player.queue.mode = wavelink.QueueMode.normal
             await interaction.response.send_message("➡️ Đã **tắt** chế độ lặp lại.")
+
+    @app_commands.command(name="ping", description="Kiểm tra độ trễ mạng và trạng thái kết nối của bot.")
+    async def ping(self, interaction: discord.Interaction) -> None:
+        """Kiểm tra độ trễ Gateway, REST API và độ trễ Voice Server để đánh giá độ mượt."""
+        start_time = time.perf_counter()
+        await interaction.response.defer()
+        end_time = time.perf_counter()
+
+        api_latency = round((end_time - start_time) * 1000)
+        gateway_latency = round(self.bot.latency * 1000)
+
+        player: wavelink.Player = cast(wavelink.Player, interaction.guild.voice_client)
+
+        embed = discord.Embed(
+            title="🏓 Pong! Trạng Thái Kết Nối & Độ Trễ",
+            color=discord.Color.green() if gateway_latency < 150 else discord.Color.orange(),
+        )
+
+        embed.add_field(name="📶 Discord Gateway", value=f"`{gateway_latency} ms`", inline=True)
+        embed.add_field(name="⚡ Phản hồi REST API", value=f"`{api_latency} ms`", inline=True)
+
+        if player and player.connected:
+            voice_ping = player.ping
+            voice_text = f"`{voice_ping} ms`" if voice_ping >= 0 else "`Đang đồng bộ...`"
+            embed.add_field(name="🎙️ Độ trễ Voice (Lavalink)", value=voice_text, inline=True)
+
+            # Đánh giá chất lượng phát nhạc thời gian thực
+            if voice_ping >= 0:
+                if voice_ping < 80:
+                    status = "🟢 **Rất mượt** (Âm thanh mượt mà tuyệt đối, không lag)"
+                elif voice_ping < 160:
+                    status = "🟡 **Ổn định** (Nghe tốt, bình thường)"
+                else:
+                    status = "🔴 **Độ trễ cao** (Có thể bị gián đoạn hoặc giật nhẹ âm)"
+                embed.add_field(name="📊 Đánh giá chất lượng nghe nhạc:", value=status, inline=False)
+        else:
+            embed.add_field(name="🎙️ Độ trễ Voice", value="`Bot chưa vào voice`", inline=True)
+
+        embed.set_footer(text=f"Yêu cầu bởi {interaction.user.display_name}")
+        await interaction.followup.send(embed=embed)
 
     @commands.Cog.listener()
     async def on_voice_state_update(
