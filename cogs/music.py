@@ -274,6 +274,49 @@ class Music(commands.Cog):
 
         await interaction.response.send_message(embed=embed)
 
+    @app_commands.command(name="remove", description="Xóa một bài hát khỏi hàng đợi theo số thứ tự.")
+    @app_commands.describe(index="Số thứ tự của bài hát cần xóa trong /queue (ví dụ: 1)")
+    async def remove(self, interaction: discord.Interaction, index: int) -> None:
+        """Xóa bài hát khỏi hàng đợi theo số thứ tự hiển thị trong /queue."""
+        if not interaction.user or not isinstance(interaction.user, discord.Member) or not interaction.user.voice:
+            await interaction.response.send_message("❌ Bạn cần tham gia một kênh thoại trước!", ephemeral=True)
+            return
+
+        player: wavelink.Player = cast(wavelink.Player, interaction.guild.voice_client)
+        if not player or not player.connected:
+            await interaction.response.send_message("❌ Bot hiện không ở trong kênh thoại.", ephemeral=True)
+            return
+
+        if player.queue.is_empty:
+            await interaction.response.send_message("📭 Hàng đợi hiện đang trống, không có bài hát nào để xóa.", ephemeral=True)
+            return
+
+        total_tracks = len(player.queue)
+        if index < 1 or index > total_tracks:
+            await interaction.response.send_message(
+                f"❌ Số thứ tự `{index}` không hợp lệ! Hàng đợi hiện có `{total_tracks}` bài hát (từ 1 đến {total_tracks}).",
+                ephemeral=True,
+            )
+            return
+
+        target_idx = index - 1
+        removed_track: wavelink.Playable = player.queue[target_idx]
+        player.queue.delete(target_idx)
+
+        embed = discord.Embed(
+            title="🗑️ Đã Xóa Bài Hát Khỏi Hàng Đợi",
+            description=f"**[{removed_track.title}]({removed_track.uri})**",
+            color=discord.Color.red(),
+        )
+        embed.add_field(name="Thời lượng", value=format_duration(removed_track.length), inline=True)
+        embed.add_field(name="Vị trí đã xóa", value=f"Số `{index}`", inline=True)
+        embed.add_field(name="Còn lại trong hàng đợi", value=f"`{len(player.queue)}` bài hát", inline=True)
+        if removed_track.artwork:
+            embed.set_thumbnail(url=removed_track.artwork)
+        embed.set_footer(text=f"Thực hiện bởi {interaction.user.display_name}")
+
+        await interaction.response.send_message(embed=embed)
+
     @app_commands.command(name="nowplaying", description="Hiển thị thông tin chi tiết bài hát đang phát.")
     async def nowplaying(self, interaction: discord.Interaction) -> None:
         """Xem thông tin bài hát hiện tại."""
