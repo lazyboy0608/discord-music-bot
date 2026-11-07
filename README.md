@@ -2,7 +2,7 @@
 
 Discord Music Bot hiệu năng cao, âm thanh mượt mà, hỗ trợ phát nhạc từ **YouTube** và **SoundCloud**. 
 
-Hỗ trợ 2 phương thức khởi chạy linh hoạt: **Docker Compose** (đóng gói tiện lợi) và **Native Mode** (siêu tiết kiệm RAM, lý tưởng cho máy chơi game).
+Hỗ trợ 2 phương thức khởi chạy linh hoạt: **Docker Compose** (đóng gói tiện lợi) và **Native Mode** (siêu tiết kiệm RAM, lý tưởng cho máy yếu).
 
 ---
 
@@ -10,7 +10,7 @@ Hỗ trợ 2 phương thức khởi chạy linh hoạt: **Docker Compose** (đó
 * **Kiến trúc Lavalink v4**: Xử lý giải mã và stream âm thanh Opus trực tiếp qua UDP, không gây nghẽn tiến trình bot, không giật lag.
 * **Hỗ trợ 2 chế độ vận hành**:
   * 🐳 **Docker Mode**: Quản lý đa container gọn gàng, cách ly môi trường.
-  * ⚡ **Native Mode**: Tiêu thụ vỏn vẹn **~300 MB RAM**, không cần bật máy ảo WSL 2, tiết kiệm hơn **2.5 GB RAM** cho máy tính chiến game nặng.
+  * ⚡ **Native Mode**: Tiêu thụ vỏn vẹn **~300 MB RAM**, không cần bật máy ảo WSL 2, tiết kiệm hơn **2.5 GB RAM** cho máy tính
 * **YouTube Playback Ổn định**: Tích hợp Plugin YouTube cập nhật mới nhất (hỗ trợ client iOS & TV), vượt qua các rào cản bot-detection của YouTube.
 * **Đa máy chủ (Multi-guild)**: Chạy độc lập trên nhiều server Discord cùng lúc với hàng đợi (Queue) riêng biệt.
 * **Giao diện Slash Commands trực quan**: Đầy đủ thanh tiến trình bài hát, ảnh bìa, âm lượng, chế độ lặp lại.
@@ -70,8 +70,7 @@ LAVALINK_URI=http://lavalink:2333
 
 Tùy vào nhu cầu sử dụng phần cứng của bạn, hãy chọn **1 trong 2** phương án dưới đây:
 
-### ⚡ Phương án 1: Chạy Native (Khuyên dùng cho Game thủ - Siêu nhẹ ~300 MB RAM)
-> Giúp bạn **tắt hẳn 100% Docker Desktop**, giải phóng hoàn toàn **2.5 GB RAM** của máy ảo `VmmemWSL`, máy mượt mà tối đa để chiến game.
+### ⚡ Phương án 1: Chạy Native (Khuyên dùng - Siêu nhẹ ~300 MB RAM)
 
 #### Yêu cầu:
 * **Java 17 trở lên** (khuyên dùng [Java 21 LTS](https://www.oracle.com/java/technologies/downloads/)).
